@@ -1,0 +1,433 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Material Symbols icon font (loaded via <link> in layout) */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.fill-icon {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* Helpers used by the Tailwind-styled catalog screen */
+.card-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+.tactile-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.input-focus-effect:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(94, 0, 129, 0.1);
+}
+.stepper-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Design-system palette (Material 3, "Pin Quest" purple) shared by the
+   catalog / contact / edit pages so they stay consistent with the landing. */
+:root {
+  --bg: #f9f9fb; /* surface */
+  --surface: #ffffff; /* surface-container-lowest */
+  --border: #d2c1d3; /* outline-variant */
+  --text: #1a1c1d; /* on-surface */
+  --muted: #4e4351; /* on-surface-variant */
+  --primary: #5e0081;
+  --primary-dark: #46005f;
+  --primary-tint: #f8d8ff; /* primary-fixed */
+  --success: #2e7d32;
+  --danger: #ba1a1a; /* error */
+  --radius: 16px;
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Full-width shell; individual pages center their own content responsively */
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  position: relative;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header .logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  flex: none;
+}
+
+.app-header h1 {
+  font-size: 17px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.app-header .sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.back-btn {
+  border: none;
+  background: var(--bg);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--text);
+}
+
+.page {
+  padding: 16px 16px 120px;
+  max-width: 672px; /* 2xl — matches the Tailwind screens */
+  margin-inline: auto;
+}
+
+/* ---------- Catalog ---------- */
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 20px 4px 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.pin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pin-card.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-tint);
+}
+
+.pin-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #f1f5f9;
+}
+
+.pin-card .body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pin-card .name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.pin-card .price {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* quantity stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.stepper button {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+}
+
+.stepper button:disabled {
+  color: #cbd5e1;
+}
+
+.stepper .qty {
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+}
+
+.add-btn {
+  border: 1px solid var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-dark);
+  border-radius: 10px;
+  padding: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  width: 100%;
+}
+
+/* ---------- Sticky bottom bar ---------- */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 672px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 20;
+}
+
+.bottom-bar .summary {
+  flex: 1;
+  min-width: 0;
+}
+.bottom-bar .summary .total {
+  font-weight: 800;
+  font-size: 18px;
+}
+.bottom-bar .summary .count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.45;
+}
+.btn.block {
+  width: 100%;
+}
+.btn.ghost {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn.success {
+  background: var(--success);
+}
+
+/* ---------- Forms ---------- */
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 16px;
+  color: var(--text);
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+.field .hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.field .err {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
+/* ---------- Order summary list ---------- */
+.summary-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.summary-line img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex: none;
+}
+.summary-line .ln-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+.summary-line .ln-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+.summary-line .ln-total {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+/* ---------- Confirmation ---------- */
+.confirm {
+  text-align: center;
+  padding: 32px 16px;
+}
+.confirm h2 {
+  font-size: 22px;
+  font-weight: 800;
+}
+.confirm .check {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: var(--success);
+  display: grid;
+  place-items: center;
+  font-size: 44px;
+  margin: 0 auto 20px;
+}
+.code-box {
+  background: var(--primary-tint);
+  border: 1px dashed var(--primary);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 20px 0;
+}
+.code-box .label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.code-box .code {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--primary-dark);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 40px 16px;
+}
+
+.order-pick {
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.order-pick .chev {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+}

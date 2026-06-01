@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npm audit *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s \"http://localhost:3000/_next/static/css/app/layout.css\")",
+      "Bash(npm ls *)",
+      "Bash(curl -s -o /dev/null -w \"novo: %{http_code}\\\\n\" http://localhost:3000/novo)",
+      "Bash(curl -s -o /dev/null -w \"editar: %{http_code}\\\\n\" http://localhost:3000/editar)",
+      "Bash(curl -s -o /dev/null -w \"missing pin img: %{http_code}\\\\n\" http://localhost:3000/pins/passarinhos.png)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/pins/__TRACKED_VAR__.png)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/__TRACKED_VAR__)",
+      "Bash(rm -f public/pins/README.txt)",
+      "Bash(rmdir public/pins)",
+      "Bash(curl -s http://localhost:3000__TRACKED_VAR__)"
+    ]
+  }
+}

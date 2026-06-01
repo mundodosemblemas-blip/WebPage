@@ -7,7 +7,7 @@ export interface Pin {
   id: string;
   name: string;
   category: string;
-  price: number; // in BRL
+  price: number; // in CVE (Cape Verdean escudo)
   image: string; // path under /public (e.g. "/passarinhos.jpg")
 }
 
@@ -37,6 +37,8 @@ export const PIN_MAP: Record<string, Pin> = Object.fromEntries(
   PINS.map((p) => [p.id, p])
 );
 
-export function formatBRL(value: number): string {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// Cape Verdean escudo (CVE). Prices are whole escudos; grouped with a "."
+// thousands separator and suffixed with the CVE code, e.g. "1.500 CVE".
+export function formatCVE(value: number): string {
+  return `${Math.round(value).toLocaleString("pt-PT")} CVE`;
 }

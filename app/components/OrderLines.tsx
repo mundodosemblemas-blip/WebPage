@@ -1,6 +1,6 @@
 "use client";
 
-import { PIN_MAP, FALLBACK_IMAGE, formatBRL } from "@/lib/pins";
+import { PIN_MAP, FALLBACK_IMAGE, formatCVE } from "@/lib/pins";
 import type { Cart } from "./CatalogEditor";
 
 // Read-only itemized list of a cart, used on the confirmation screen.
@@ -24,10 +24,10 @@ export default function OrderLines({ cart }: { cart: Cart }) {
             <div>
               <div className="ln-name">{pin.name}</div>
               <div className="ln-sub">
-                {qty} × {formatBRL(pin.price)}
+                {qty} × {formatCVE(pin.price)}
               </div>
             </div>
-            <div className="ln-total">{formatBRL(pin.price * qty)}</div>
+            <div className="ln-total">{formatCVE(pin.price * qty)}</div>
           </div>
         );
       })}

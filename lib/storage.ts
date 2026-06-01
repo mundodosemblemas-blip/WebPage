@@ -1,9 +1,11 @@
-// Prototype persistence layer backed by localStorage. This is where you would
-// later swap in a real backend (Google Sheets API, Supabase, etc.) — keep the
-// same function signatures and the UI won't need to change.
+// Persistence layer backed by Supabase. The function signatures mirror the
+// original localStorage prototype, except they are now async (they hit the
+// network) — callers must await them. Run supabase/schema.sql once to create
+// the table and policies these functions expect.
 
 import { PIN_MAP } from "./pins";
 import { normalizeCVPhone } from "./phone";
+import { supabase } from "./supabase";
 
 export interface OrderItem {
   pinId: string;
@@ -21,55 +23,20 @@ export interface Order {
   updatedAt: string; // ISO
 }
 
-const KEY = "mde_orders";
+const TABLE = "orders";
 
-function readAll(): Order[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Order[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeAll(orders: Order[]): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(orders));
-}
-
-function genCode(): string {
-  const part = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `MDE-${part}`;
-}
-
-export function createOrder(
-  data: Omit<Order, "code" | "createdAt" | "updatedAt">
-): Order {
-  const now = new Date().toISOString();
-  const orders = readAll();
-  let code = genCode();
-  while (orders.some((o) => o.code === code)) code = genCode();
-  const order: Order = { ...data, code, createdAt: now, updatedAt: now };
-  orders.push(order);
-  writeAll(orders);
-  return order;
-}
-
-export function updateOrder(
-  code: string,
-  patch: Partial<Pick<Order, "items" | "name" | "club" | "email" | "phone">>
-): Order | null {
-  const orders = readAll();
-  const idx = orders.findIndex((o) => o.code === code);
-  if (idx === -1) return null;
-  orders[idx] = {
-    ...orders[idx],
-    ...patch,
-    updatedAt: new Date().toISOString(),
-  };
-  writeAll(orders);
-  return orders[idx];
+// Shape of a row as stored in / returned from Supabase.
+interface OrderRow {
+  code: string;
+  name: string | null;
+  club: string | null;
+  email: string;
+  phone: string;
+  email_key: string;
+  phone_key: string;
+  items: OrderItem[];
+  created_at: string;
+  updated_at: string;
 }
 
 function norm(s: string): string {
@@ -80,18 +47,118 @@ function normPhone(s: string): string {
   return normalizeCVPhone(s);
 }
 
-// Look up orders by email + phone (the order's "identity" per the spec).
-export function findOrders(email: string, phone: string): Order[] {
-  const e = norm(email);
-  const p = normPhone(phone);
-  return readAll().filter(
-    (o) => norm(o.email) === e && normPhone(o.phone) === p
-  );
+function genCode(): string {
+  const part = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `MDE-${part}`;
 }
 
-export function findByCode(code: string): Order | null {
-  const c = code.trim().toUpperCase();
-  return readAll().find((o) => o.code === c) ?? null;
+function rowToOrder(row: OrderRow): Order {
+  return {
+    code: row.code,
+    name: row.name ?? undefined,
+    club: row.club ?? undefined,
+    email: row.email,
+    phone: row.phone,
+    items: row.items ?? [],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function createOrder(
+  data: Omit<Order, "code" | "createdAt" | "updatedAt">
+): Promise<Order> {
+  const base = {
+    name: data.name ?? null,
+    club: data.club ?? null,
+    email: data.email,
+    phone: data.phone,
+    email_key: norm(data.email),
+    phone_key: normPhone(data.phone),
+    items: data.items,
+  };
+
+  // Generate a code and insert; retry on the rare unique-code collision.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: row, error } = await supabase
+      .from(TABLE)
+      .insert({ ...base, code: genCode() })
+      .select()
+      .single();
+
+    if (!error && row) return rowToOrder(row as OrderRow);
+    // 23505 = unique_violation (code already taken) -> try a new code.
+    if (error && error.code === "23505") continue;
+    if (error) throw error;
+  }
+  throw new Error("Could not generate a unique order code. Please try again.");
+}
+
+export async function updateOrder(
+  code: string,
+  patch: Partial<Pick<Order, "items" | "name" | "club" | "email" | "phone">>
+): Promise<Order | null> {
+  const update: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (patch.items !== undefined) update.items = patch.items;
+  if (patch.name !== undefined) update.name = patch.name ?? null;
+  if (patch.club !== undefined) update.club = patch.club ?? null;
+  if (patch.email !== undefined) {
+    update.email = patch.email;
+    update.email_key = norm(patch.email);
+  }
+  if (patch.phone !== undefined) {
+    update.phone = patch.phone;
+    update.phone_key = normPhone(patch.phone);
+  }
+
+  const { data: row, error } = await supabase
+    .from(TABLE)
+    .update(update)
+    .eq("code", code)
+    .select()
+    .maybeSingle();
+
+  if (error) throw error;
+  return row ? rowToOrder(row as OrderRow) : null;
+}
+
+// Look up orders by email OR phone — either identifier is enough to find an
+// order. At least one of the two must be non-empty.
+export async function findOrders(
+  email: string,
+  phone: string
+): Promise<Order[]> {
+  const e = norm(email);
+  const p = normPhone(phone);
+  const hasEmail = e.length > 0;
+  const hasPhone = p.length > 0;
+  if (!hasEmail && !hasPhone) return [];
+
+  let query = supabase.from(TABLE).select();
+  if (hasEmail && hasPhone) {
+    query = query.or(`email_key.eq.${e},phone_key.eq.${p}`);
+  } else if (hasEmail) {
+    query = query.eq("email_key", e);
+  } else {
+    query = query.eq("phone_key", p);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as OrderRow[]).map(rowToOrder);
+}
+
+export async function findByCode(code: string): Promise<Order | null> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select()
+    .eq("code", code.trim().toUpperCase())
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ? rowToOrder(data as OrderRow) : null;
 }
 
 export function orderTotal(order: Pick<Order, "items">): number {

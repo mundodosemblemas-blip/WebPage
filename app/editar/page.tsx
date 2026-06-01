@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 import CatalogEditor, { type Cart } from "../components/CatalogEditor";
-import { PIN_MAP, formatBRL } from "@/lib/pins";
+import { PIN_MAP, formatCVE } from "@/lib/pins";
 import { CV_PHONE_PLACEHOLDER } from "@/lib/phone";
 import {
   findOrders,
@@ -25,6 +25,8 @@ export default function EditOrderPage() {
 
   const [active, setActive] = useState<Order | null>(null);
   const [cart, setCart] = useState<Cart>({});
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const { total, count } = useMemo(() => {
     let total = 0;
@@ -39,12 +41,22 @@ export default function EditOrderPage() {
     return { total, count };
   }, [cart]);
 
-  function lookup() {
-    const found = findOrders(email, phone);
-    setResults(found);
-    setNotFound(found.length === 0);
-    if (found.length === 1) selectOrder(found[0]);
-    else if (found.length > 1) setStep("pick");
+  async function lookup() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const found = await findOrders(email, phone);
+      setResults(found);
+      setNotFound(found.length === 0);
+      if (found.length === 1) selectOrder(found[0]);
+      else if (found.length > 1) setStep("pick");
+    } catch (err) {
+      console.error("Falha ao localizar o pedido", err);
+      setError("Não foi possível buscar o pedido. Tente novamente.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function selectOrder(order: Order) {
@@ -55,13 +67,22 @@ export default function EditOrderPage() {
     setStep("edit");
   }
 
-  function save() {
-    if (!active) return;
+  async function save() {
+    if (!active || busy) return;
     const items = Object.entries(cart)
       .filter(([, qty]) => qty > 0)
       .map(([pinId, qty]) => ({ pinId, qty }));
-    updateOrder(active.code, { items });
-    setStep("saved");
+    setBusy(true);
+    setError("");
+    try {
+      await updateOrder(active.code, { items });
+      setStep("saved");
+    } catch (err) {
+      console.error("Falha ao salvar o pedido", err);
+      setError("Não foi possível salvar as alterações. Tente novamente.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   /* ---------- Saved ---------- */
@@ -76,7 +97,7 @@ export default function EditOrderPage() {
             <p className="muted">Código {active.code}</p>
             <div className="code-box">
               <div className="label">Novo total</div>
-              <div className="code">{formatBRL(total)}</div>
+              <div className="code">{formatCVE(total)}</div>
             </div>
           </div>
           <Link
@@ -105,13 +126,22 @@ export default function EditOrderPage() {
         </div>
         <div className="bottom-bar">
           <div className="summary">
-            <div className="total">{formatBRL(total)}</div>
+            <div className="total">{formatCVE(total)}</div>
             <div className="count">
               {count} {count === 1 ? "pin" : "pins"}
             </div>
           </div>
-          <button className="btn success" disabled={count === 0} onClick={save}>
-            Salvar alterações
+          {error && (
+            <div className="muted" style={{ color: "var(--danger)" }}>
+              {error}
+            </div>
+          )}
+          <button
+            className="btn success"
+            disabled={count === 0 || busy}
+            onClick={save}
+          >
+            {busy ? "Salvando…" : "Salvar alterações"}
           </button>
         </div>
       </main>
@@ -133,7 +163,7 @@ export default function EditOrderPage() {
               <div>
                 <div className="ln-name">{o.code}</div>
                 <div className="ln-sub">
-                  {orderCount(o)} pins · {formatBRL(orderTotal(o))}
+                  {orderCount(o)} pins · {formatCVE(orderTotal(o))}
                 </div>
               </div>
               <div className="chev">›</div>
@@ -150,7 +180,7 @@ export default function EditOrderPage() {
       <Header title="Editar pedido" subtitle="Localize o seu pedido" back />
       <div className="page">
         <p className="muted" style={{ marginTop: 0 }}>
-          Digite o e-mail e o telefone usados no pedido.
+          Digite o e-mail <strong>ou</strong> o telefone usados no pedido.
         </p>
         <div className="field">
           <label>E-mail</label>
@@ -185,7 +215,7 @@ export default function EditOrderPage() {
               Nenhum pedido encontrado
             </div>
             <div className="muted">
-              Verifique o e-mail e o telefone, ou{" "}
+              Verifique o e-mail ou o telefone, ou{" "}
               <Link href="/novo" style={{ color: "var(--primary)" }}>
                 faça um novo pedido
               </Link>
@@ -194,12 +224,18 @@ export default function EditOrderPage() {
           </div>
         )}
 
+        {error && (
+          <div className="card" style={{ marginBottom: 16, color: "var(--danger)" }}>
+            {error}
+          </div>
+        )}
+
         <button
           className="btn block"
-          disabled={!email.trim() || !phone.trim()}
+          disabled={(!email.trim() && !phone.trim()) || busy}
           onClick={lookup}
         >
-          Localizar pedido
+          {busy ? "Localizando…" : "Localizar pedido"}
         </button>
       </div>
     </main>

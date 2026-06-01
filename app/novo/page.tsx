@@ -5,7 +5,7 @@ import Link from "next/link";
 import Header from "../components/Header";
 import CatalogEditor, { type Cart } from "../components/CatalogEditor";
 import OrderLines from "../components/OrderLines";
-import { PIN_MAP, FALLBACK_IMAGE, formatBRL } from "@/lib/pins";
+import { PIN_MAP, FALLBACK_IMAGE, formatCVE } from "@/lib/pins";
 import { createOrder, type Order } from "@/lib/storage";
 import { isValidCVPhone, CV_PHONE_PLACEHOLDER } from "@/lib/phone";
 
@@ -18,6 +18,7 @@ export default function NewOrderPage() {
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [order, setOrder] = useState<Order | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const { total, count } = useMemo(() => {
     let total = 0;
@@ -42,18 +43,29 @@ export default function NewOrderPage() {
     return Object.keys(e).length === 0;
   }
 
-  function submit() {
+  async function submit() {
     if (!validateContact()) return;
+    if (submitting) return;
     const items = Object.entries(cart)
       .filter(([, qty]) => qty > 0)
       .map(([pinId, qty]) => ({ pinId, qty }));
-    const created = createOrder({
-      email: email.trim(),
-      phone: phone.trim(),
-      items,
-    });
-    setOrder(created);
-    setStep("done");
+    setSubmitting(true);
+    try {
+      const created = await createOrder({
+        email: email.trim(),
+        phone: phone.trim(),
+        items,
+      });
+      setOrder(created);
+      setStep("done");
+    } catch (err) {
+      console.error("Falha ao criar o pedido", err);
+      setErrors({
+        submit: "Não foi possível salvar o pedido. Tente novamente.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   /* ---------- Confirmation ---------- */
@@ -66,7 +78,8 @@ export default function NewOrderPage() {
             <div className="check">✓</div>
             <h2 style={{ margin: "0 0 4px" }}>Tudo certo!</h2>
             <p className="muted">
-              Guarde o código abaixo para editar o pedido depois.
+              Para editar este pedido depois, use o seu <strong>e-mail</strong>{" "}
+              ou <strong>telefone</strong> na opção “Editar pedido”.
             </p>
             <div className="code-box">
               <div className="label">Código do pedido</div>
@@ -81,7 +94,7 @@ export default function NewOrderPage() {
               style={{ borderBottom: "none", paddingBottom: 0 }}
             >
               <div className="ln-name">Total</div>
-              <div className="ln-total">{formatBRL(total)}</div>
+              <div className="ln-total">{formatCVE(total)}</div>
             </div>
           </div>
 
@@ -267,9 +280,15 @@ export default function NewOrderPage() {
         {/* Bottom action bar */}
         <div className="fixed bottom-0 left-0 w-full bg-surface-container-lowest p-margin-mobile pb-6 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] z-50">
           <div className="max-w-2xl mx-auto w-full">
+            {errors.submit && (
+              <p className="text-error font-label-sm text-label-sm text-center mb-3">
+                {errors.submit}
+              </p>
+            )}
             <button
               onClick={submit}
-              className="w-full bg-secondary-container hover:bg-secondary-fixed active:scale-95 text-on-secondary-container font-headline-md text-headline-md py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
+              disabled={submitting}
+              className="w-full bg-secondary-container hover:bg-secondary-fixed active:scale-95 text-on-secondary-container font-headline-md text-headline-md py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-60 disabled:active:scale-100"
             >
               <span
                 className="material-symbols-outlined"
@@ -277,7 +296,7 @@ export default function NewOrderPage() {
               >
                 check_circle
               </span>
-              Confirmar Pedido
+              {submitting ? "Salvando…" : "Confirmar Pedido"}
             </button>
           </div>
         </div>

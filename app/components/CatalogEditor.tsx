@@ -1,6 +1,6 @@
 "use client";
 
-import { PINS, FALLBACK_IMAGE, formatBRL } from "@/lib/pins";
+import { PINS, FALLBACK_IMAGE, formatCVE } from "@/lib/pins";
 
 export type Cart = Record<string, number>; // pinId -> qty
 
@@ -62,7 +62,7 @@ export default function CatalogEditor({
               </div>
               <div className="flex items-center justify-between mt-3">
                 <span className="font-body-md text-body-md text-on-surface-variant">
-                  {formatBRL(pin.price)}
+                  {formatCVE(pin.price)}
                 </span>
                 <div className="flex items-center bg-surface-container rounded-full p-1 border border-outline-variant/20">
                   <button

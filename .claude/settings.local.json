@@ -15,7 +15,9 @@
       "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/__TRACKED_VAR__)",
       "Bash(rm -f public/pins/README.txt)",
       "Bash(rmdir public/pins)",
-      "Bash(curl -s http://localhost:3000__TRACKED_VAR__)"
+      "Bash(curl -s http://localhost:3000__TRACKED_VAR__)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

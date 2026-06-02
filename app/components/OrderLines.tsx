@@ -1,33 +1,42 @@
 "use client";
 
-import { PIN_MAP, FALLBACK_IMAGE, formatCVE } from "@/lib/pins";
-import type { Cart } from "./CatalogEditor";
+import { FALLBACK_IMAGE, formatCVE, type Product } from "@/lib/products";
+import type { OrderItem } from "@/lib/storage";
 
-// Read-only itemized list of a cart, used on the confirmation screen.
-export default function OrderLines({ cart }: { cart: Cart }) {
-  const entries = Object.entries(cart).filter(([, qty]) => qty > 0);
+// Read-only itemized list of an order. Renders from the stored snapshot
+// (name + price); if a `products` map is provided it is used to show the
+// product image (orders don't store the image).
+export default function OrderLines({
+  items,
+  products,
+}: {
+  items: OrderItem[];
+  products?: Record<string, Product>;
+}) {
   return (
     <div>
-      {entries.map(([pinId, qty]) => {
-        const pin = PIN_MAP[pinId];
-        if (!pin) return null;
+      {items.map((it) => {
+        const product = products?.[it.pinId];
+        const name = it.name ?? product?.name ?? it.pinId;
+        const price = it.price ?? product?.price ?? 0;
+        const image = product?.image || FALLBACK_IMAGE;
         return (
-          <div key={pinId} className="summary-line">
+          <div key={it.pinId} className="summary-line">
             <img
-              src={pin.image}
-              alt={pin.name}
+              src={image}
+              alt={name}
               onError={(e) => {
                 if (e.currentTarget.src !== FALLBACK_IMAGE)
                   e.currentTarget.src = FALLBACK_IMAGE;
               }}
             />
             <div>
-              <div className="ln-name">{pin.name}</div>
+              <div className="ln-name">{name}</div>
               <div className="ln-sub">
-                {qty} × {formatCVE(pin.price)}
+                {it.qty} × {formatCVE(price)}
               </div>
             </div>
-            <div className="ln-total">{formatCVE(pin.price * qty)}</div>
+            <div className="ln-total">{formatCVE(price * it.qty)}</div>
           </div>
         );
       })}

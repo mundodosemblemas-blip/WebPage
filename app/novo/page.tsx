@@ -1,17 +1,26 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import CatalogEditor, { type Cart } from "../components/CatalogEditor";
 import OrderLines from "../components/OrderLines";
-import { PIN_MAP, FALLBACK_IMAGE, formatCVE } from "@/lib/pins";
-import { createOrder, type Order } from "@/lib/storage";
+import {
+  listProducts,
+  productMap,
+  FALLBACK_IMAGE,
+  formatCVE,
+  PRODUCT_TYPE_LABEL,
+  type Product,
+} from "@/lib/products";
+import { createOrder, findOrders, type Order } from "@/lib/storage";
 import { isValidCVPhone, CV_PHONE_PLACEHOLDER } from "@/lib/phone";
 
 type Step = "catalog" | "contact" | "done";
 
 export default function NewOrderPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>("catalog");
   const [cart, setCart] = useState<Cart>({});
   const [email, setEmail] = useState("");
@@ -20,18 +29,38 @@ export default function NewOrderPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    listProducts({ activeOnly: true })
+      .then((list) => alive && setProducts(list))
+      .catch((err) => {
+        console.error("Falha ao carregar produtos", err);
+        if (alive) setLoadError("Não foi possível carregar o catálogo.");
+      })
+      .finally(() => alive && setLoadingProducts(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const prodMap = useMemo(() => productMap(products), [products]);
+
   const { total, count } = useMemo(() => {
     let total = 0;
     let count = 0;
-    for (const [pinId, qty] of Object.entries(cart)) {
-      const pin = PIN_MAP[pinId];
-      if (pin) {
-        total += pin.price * qty;
+    for (const [productId, qty] of Object.entries(cart)) {
+      const p = prodMap[productId];
+      if (p) {
+        total += p.price * qty;
         count += qty;
       }
     }
     return { total, count };
-  }, [cart]);
+  }, [cart, prodMap]);
 
   function validateContact(): boolean {
     const e: Record<string, string> = {};
@@ -48,9 +77,23 @@ export default function NewOrderPage() {
     if (submitting) return;
     const items = Object.entries(cart)
       .filter(([, qty]) => qty > 0)
-      .map(([pinId, qty]) => ({ pinId, qty }));
+      .map(([productId, qty]) => {
+        const p = prodMap[productId];
+        return { pinId: productId, name: p?.name, price: p?.price, qty };
+      });
     setSubmitting(true);
     try {
+      // If this email/phone already has an order, don't create a duplicate —
+      // send the user to the search page (pre-filled) to edit the existing one.
+      const existing = await findOrders(email.trim(), phone.trim());
+      if (existing.length > 0) {
+        const params = new URLSearchParams({
+          email: email.trim(),
+          phone: phone.trim(),
+        });
+        router.push(`/editar?${params.toString()}`);
+        return;
+      }
       const created = await createOrder({
         email: email.trim(),
         phone: phone.trim(),
@@ -88,7 +131,7 @@ export default function NewOrderPage() {
           </div>
 
           <div className="card">
-            <OrderLines cart={cart} />
+            <OrderLines items={order.items} products={prodMap} />
             <div
               className="summary-line"
               style={{ borderBottom: "none", paddingBottom: 0 }}
@@ -148,17 +191,17 @@ export default function NewOrderPage() {
               Itens Selecionados
             </h2>
             <div className="bg-surface-container-lowest rounded-xl tactile-shadow p-4 flex flex-col gap-4">
-              {items.map(([pinId, qty], i) => {
-                const pin = PIN_MAP[pinId];
-                if (!pin) return null;
+              {items.map(([productId, qty], i) => {
+                const p = prodMap[productId];
+                if (!p) return null;
                 return (
-                  <Fragment key={pinId}>
+                  <Fragment key={productId}>
                     {i > 0 && <div className="h-px w-full bg-surface-variant" />}
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-lg bg-surface-container-low overflow-hidden border border-outline-variant/30 shrink-0">
                         <img
-                          src={pin.image}
-                          alt={pin.name}
+                          src={p.image || FALLBACK_IMAGE}
+                          alt={p.name}
                           onError={(e) => {
                             if (e.currentTarget.src !== FALLBACK_IMAGE)
                               e.currentTarget.src = FALLBACK_IMAGE;
@@ -168,10 +211,10 @@ export default function NewOrderPage() {
                       </div>
                       <div className="flex-1 flex flex-col justify-center min-w-0">
                         <h3 className="font-body-md text-body-md font-semibold text-on-surface">
-                          {pin.name}
+                          {p.name}
                         </h3>
                         <p className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">
-                          {pin.category}
+                          {PRODUCT_TYPE_LABEL[p.type] ?? p.type}
                         </p>
                       </div>
                       <div className="bg-primary-container text-on-primary-container font-label-md text-label-md px-3 py-1.5 rounded-full shrink-0 flex items-center justify-center min-w-[2.5rem]">
@@ -337,7 +380,19 @@ export default function NewOrderPage() {
       </header>
 
       <main className="flex-1 px-margin-mobile pb-32 pt-2 flex flex-col gap-4 max-w-2xl mx-auto w-full">
-        <CatalogEditor cart={cart} onChange={setCart} />
+        {loadingProducts ? (
+          <p className="text-center text-on-surface-variant py-10">
+            A carregar catálogo…
+          </p>
+        ) : loadError ? (
+          <p className="text-center text-error py-10">{loadError}</p>
+        ) : products.length === 0 ? (
+          <p className="text-center text-on-surface-variant py-10">
+            Nenhum produto disponível no momento.
+          </p>
+        ) : (
+          <CatalogEditor products={products} cart={cart} onChange={setCart} />
+        )}
       </main>
 
       {/* Bottom bar */}

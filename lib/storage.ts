@@ -3,12 +3,16 @@
 // network) — callers must await them. Run supabase/schema.sql once to create
 // the table and policies these functions expect.
 
-import { PIN_MAP } from "./pins";
 import { normalizeCVPhone } from "./phone";
 import { supabase } from "./supabase";
 
+// An order line stores the product id plus a snapshot of the name and unit
+// price at the time of ordering, so the order stays accurate even if the
+// product is later edited, hidden, or removed from the catalog.
 export interface OrderItem {
-  pinId: string;
+  pinId: string; // product id
+  name?: string; // snapshot of product name
+  price?: number; // snapshot of unit price (CVE)
   qty: number;
 }
 
@@ -162,10 +166,22 @@ export async function findByCode(code: string): Promise<Order | null> {
 }
 
 export function orderTotal(order: Pick<Order, "items">): number {
-  return order.items.reduce((sum, it) => {
-    const pin = PIN_MAP[it.pinId];
-    return sum + (pin ? pin.price * it.qty : 0);
-  }, 0);
+  return order.items.reduce((sum, it) => sum + (it.price ?? 0) * it.qty, 0);
+}
+
+// Admin: every order, newest first.
+export async function listAllOrders(): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select()
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as OrderRow[]).map(rowToOrder);
+}
+
+export async function deleteOrder(code: string): Promise<void> {
+  const { error } = await supabase.from(TABLE).delete().eq("code", code);
+  if (error) throw error;
 }
 
 export function orderCount(order: Pick<Order, "items">): number {

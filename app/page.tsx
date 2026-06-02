@@ -20,7 +20,7 @@ export default function HomePage() {
             </span>
           </div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">
-            Pin Quest
+            Mundo de Emblemas 🇨🇻
           </h1>
           <h2 className="font-headline-md text-headline-md text-on-surface-variant">
             Aventureiros
@@ -75,6 +75,12 @@ export default function HomePage() {
         <div className="mt-12 text-center">
           <p className="font-label-sm text-label-sm text-outline">
             Gestão de Pins para Clubes Regionais
+          </p>
+          <p className="font-label-sm text-label-sm text-outline mt-5">
+            © 2023 Mundo de Emblemas. Todos os direitos reservados.
+          </p>
+          <p className="font-label-sm text-label-sm text-outline">
+            Contato: mundodosemblemas@gmail.com
           </p>
         </div>
       </main>

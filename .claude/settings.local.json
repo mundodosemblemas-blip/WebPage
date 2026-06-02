@@ -20,7 +20,9 @@
       "Bash(echo \"EXIT: $?\")",
       "Bash(powershell -NoProfile -Command \"@\\(Get-Process node -ErrorAction SilentlyContinue\\).Count\")",
       "Bash(curl -s --max-time 30 -w \" [%{http_code}]\" -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\\\\\"password\\\\\":\\\\\"admin123\\\\\"}')",
-      "Bash(curl -s --max-time 30 -w \" [%{http_code}]\" -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\\\\\"password\\\\\":\\\\\"x\\\\\"}')"
+      "Bash(curl -s --max-time 30 -w \" [%{http_code}]\" -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\\\\\"password\\\\\":\\\\\"x\\\\\"}')",
+      "Bash(git check-ignore *)",
+      "Bash(git add *)"
     ]
   }
 }

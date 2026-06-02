@@ -1,9 +1,63 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Pin Quest — Aventureiros",
-  description: "Pré-encomenda de pins dos Aventureiros",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Aventureiros`,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "pins",
+    "emblemas",
+    "Aventureiros",
+    "Desbravadores",
+    "Cabo Verde",
+    "clubes",
+    "pré-encomenda",
+    "Mundo de Emblemas",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_PT",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Aventureiros`,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: SITE_OG_IMAGE,
+        width: 400,
+        height: 400,
+        alt: `${SITE_NAME} — pins dos Aventureiros`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — Aventureiros`,
+    description: SITE_DESCRIPTION,
+    images: [SITE_OG_IMAGE],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export const viewport: Viewport = {
@@ -19,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-PT">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link

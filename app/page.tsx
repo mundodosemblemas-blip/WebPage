@@ -77,7 +77,7 @@ export default function HomePage() {
             Gestão de Pins para Clubes Regionais
           </p>
           <p className="font-label-sm text-label-sm text-outline mt-5">
-            © 2023 Mundo de Emblemas. Todos os direitos reservados.
+            © 2026 Mundo de Emblemas. Todos os direitos reservados.
           </p>
           <p className="font-label-sm text-label-sm text-outline">
             Contato: mundodosemblemas@gmail.com

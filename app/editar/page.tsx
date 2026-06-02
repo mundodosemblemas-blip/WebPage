@@ -18,6 +18,7 @@ import {
   orderTotal,
   type Order,
 } from "@/lib/storage";
+import { notifyOrder } from "@/lib/notify";
 
 type Step = "lookup" | "pick" | "edit" | "saved";
 
@@ -124,6 +125,7 @@ export default function EditOrderPage() {
     setError("");
     try {
       await updateOrder(active.code, { items });
+      notifyOrder(active.code, "updated");
       setStep("saved");
     } catch (err) {
       console.error("Falha ao salvar o pedido", err);

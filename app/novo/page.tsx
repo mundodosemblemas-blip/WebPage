@@ -16,6 +16,7 @@ import {
 } from "@/lib/products";
 import { createOrder, findOrders, type Order } from "@/lib/storage";
 import { isValidCVPhone, CV_PHONE_PLACEHOLDER } from "@/lib/phone";
+import { notifyOrder } from "@/lib/notify";
 
 type Step = "catalog" | "contact" | "done";
 
@@ -99,6 +100,7 @@ export default function NewOrderPage() {
         phone: phone.trim(),
         items,
       });
+      notifyOrder(created.code, "created");
       setOrder(created);
       setStep("done");
     } catch (err) {

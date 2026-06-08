@@ -12,18 +12,16 @@ export default function HomePage() {
       {/* Main content */}
       <main className="w-full max-w-md px-margin-mobile flex flex-col items-center justify-center z-10 relative">
         {/* Hero header */}
-        <header className="text-center mb-12 flex flex-col items-center">
-          <div className="w-24 h-24 mb-6 rounded-full bg-surface-container-highest shadow-[0_4px_12px_rgba(0,0,0,0.1)] flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-primary/20"></div>
-            <span className="material-symbols-outlined text-4xl text-on-primary fill-icon z-10 drop-shadow-md">
-              explore
-            </span>
-          </div>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">
-            Mundo de Emblemas 🇨🇻
-          </h1>
+        <header className="text-center mb-10 flex flex-col items-center">
+          <img
+            src="/logo.jpeg"
+            alt="Mundo dos Emblemas — Aventureiros"
+            width={440}
+            height={440}
+            className="w-56 sm:w-64 h-auto mb-3 "
+          />
           <h2 className="font-headline-md text-headline-md text-on-surface-variant">
-            Aventureiros
+            Aventureiros 🇨🇻
           </h2>
         </header>
 
@@ -32,7 +30,7 @@ export default function HomePage() {
           {/* Primary: new order */}
           <Link
             href="/novo"
-            className="w-full relative overflow-hidden group bg-primary text-on-primary rounded-xl p-6 shadow-[0_8px_16px_rgba(94,0,129,0.2)] flex items-center justify-between transition-transform duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface"
+            className="w-full relative overflow-hidden group bg-primary text-on-primary rounded-xl p-6 shadow-[0_8px_16px_rgba(0,45,114,0.25)] flex items-center justify-between transition-transform duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-primary-container to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative z-10 flex flex-col items-start text-left">

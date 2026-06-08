@@ -19,7 +19,7 @@
 }
 .input-focus-effect:focus-within {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(94, 0, 129, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 45, 114, 0.12);
 }
 .stepper-btn:active:not(:disabled) {
   transform: scale(0.95);
@@ -28,17 +28,17 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Design-system palette (Material 3, "Pin Quest" purple) shared by the
+/* Design-system palette (Material 3, brand blue/gold/red) shared by the
    catalog / contact / edit pages so they stay consistent with the landing. */
 :root {
   --bg: #f9f9fb; /* surface */
   --surface: #ffffff; /* surface-container-lowest */
-  --border: #d2c1d3; /* outline-variant */
+  --border: #c4c6cf; /* outline-variant */
   --text: #1a1c1d; /* on-surface */
-  --muted: #4e4351; /* on-surface-variant */
-  --primary: #5e0081;
-  --primary-dark: #46005f;
-  --primary-tint: #f8d8ff; /* primary-fixed */
+  --muted: #44474e; /* on-surface-variant */
+  --primary: #002d72; /* brand blue */
+  --primary-dark: #001f55;
+  --primary-tint: #d8e2ff; /* primary-fixed */
   --success: #2e7d32;
   --danger: #ba1a1a; /* error */
   --radius: 16px;

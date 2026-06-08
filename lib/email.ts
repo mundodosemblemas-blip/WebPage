@@ -82,21 +82,21 @@ function buildContent(order: Order, event: OrderEvent) {
   const html = `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1c1d;">
     <div style="text-align:center;margin-bottom:16px;">
-      <div style="font-size:22px;font-weight:800;color:#5e0081;">Mundo de Emblemas 🇨🇻</div>
+      <div style="font-size:22px;font-weight:800;color:#002D72;">Mundo de Emblemas 🇨🇻</div>
     </div>
     <h2 style="margin:0 0 4px;font-size:20px;">${heading}</h2>
     <p style="margin:0 0 16px;color:#555;">Obrigado! Aqui está o resumo do seu pedido.</p>
 
-    <div style="background:#f8d8ff;border:1px dashed #5e0081;border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">
+    <div style="background:#eef3ff;border:1px dashed #002D72;border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;">
       <div style="font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#777;">Código do pedido</div>
-      <div style="font-size:24px;font-weight:800;color:#46005f;letter-spacing:0.05em;">${escapeHtml(order.code)}</div>
+      <div style="font-size:24px;font-weight:800;color:#002D72;letter-spacing:0.05em;">${escapeHtml(order.code)}</div>
     </div>
 
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
       ${rows}
       <tr>
         <td style="padding:12px 0 0;font-weight:800;">Total (${count} itens)</td>
-        <td style="padding:12px 0 0;text-align:right;font-weight:800;color:#5e0081;">${formatCVE(total)}</td>
+        <td style="padding:12px 0 0;text-align:right;font-weight:800;color:#002D72;">${formatCVE(total)}</td>
       </tr>
     </table>
 

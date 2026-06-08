@@ -158,10 +158,10 @@ export const FALLBACK_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent(
   `
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
   <rect width="400" height="400" fill="#eeeef0"/>
-  <circle cx="200" cy="180" r="110" fill="#d2c1d3"/>
-  <circle cx="200" cy="180" r="110" fill="none" stroke="#807382" stroke-width="3" stroke-dasharray="6 10"/>
-  <rect x="175" y="290" width="50" height="64" rx="6" fill="#b9a9ba"/>
+  <circle cx="200" cy="180" r="110" fill="#c4c6cf"/>
+  <circle cx="200" cy="180" r="110" fill="none" stroke="#74777f" stroke-width="3" stroke-dasharray="6 10"/>
+  <rect x="175" y="290" width="50" height="64" rx="6" fill="#aeb0b6"/>
   <text x="200" y="188" font-family="Arial, sans-serif" font-size="28" font-weight="700"
-        fill="#5e0081" text-anchor="middle" dominant-baseline="middle">PIN</text>
+        fill="#002D72" text-anchor="middle" dominant-baseline="middle">PIN</text>
 </svg>`.trim()
 )}`;

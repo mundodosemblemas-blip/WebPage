@@ -11,5 +11,6 @@ export const SITE_DESCRIPTION =
   "Pré-encomenda de pins e emblemas dos Aventureiros para clubes de Cabo Verde. " +
   "Faça e acompanhe o seu pedido online de forma simples.";
 
-// Default social-share image (square pin photo served from /public).
-export const SITE_OG_IMAGE = "/passarinhos.jpg";
+// Default social-share image: the brand logo (1254×1254, served from /public).
+export const SITE_OG_IMAGE = "/logo.jpeg";
+export const SITE_OG_IMAGE_SIZE = 1254;

@@ -71,9 +71,6 @@ export default function HomePage() {
 
         {/* Footer */}
         <div className="mt-12 text-center">
-          <p className="font-label-sm text-label-sm text-outline">
-            Gestão de Pins para Clubes Regionais
-          </p>
           <p className="font-label-sm text-label-sm text-outline mt-5">
             © 2026 Mundo de Emblemas. Todos os direitos reservados.
           </p>

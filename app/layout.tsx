@@ -1,6 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_OG_IMAGE } from "@/lib/site";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  SITE_OG_IMAGE,
+  SITE_OG_IMAGE_SIZE,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -36,9 +42,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: SITE_OG_IMAGE,
-        width: 400,
-        height: 400,
-        alt: `${SITE_NAME} — pins dos Aventureiros`,
+        width: SITE_OG_IMAGE_SIZE,
+        height: SITE_OG_IMAGE_SIZE,
+        alt: `${SITE_NAME} — logótipo`,
       },
     ],
   },

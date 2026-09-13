@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
+import {
+  ADMIN_COOKIE,
+  issueSession,
+  passwordMatches,
+} from "@/lib/admin-auth";
 
-// Soft admin gate: compares the submitted password to ADMIN_PASSWORD (a
-// server-only env var, so it never ships to the browser). This only hides the
-// admin UI — data access still uses the public anon key, so it is not hard
-// security. Move to Supabase Auth + a service key for real protection.
+// POST   -> exchange the admin password for a signed, httpOnly session cookie.
+// DELETE -> log out by clearing that cookie.
+//
+// The cookie is what the admin API routes check; the browser never holds
+// anything that grants access on its own.
+
 export async function POST(request: Request) {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) {
+  if (!process.env.ADMIN_PASSWORD) {
     return NextResponse.json(
       { ok: false, error: "ADMIN_PASSWORD não configurado no servidor." },
       { status: 500 }
@@ -21,11 +27,27 @@ export async function POST(request: Request) {
     // ignore malformed body
   }
 
-  if (password && password === expected) {
-    return NextResponse.json({ ok: true });
+  if (!passwordMatches(password)) {
+    return NextResponse.json(
+      { ok: false, error: "Senha incorreta." },
+      { status: 401 }
+    );
   }
-  return NextResponse.json(
-    { ok: false, error: "Senha incorreta." },
-    { status: 401 }
-  );
+
+  const { value, maxAge } = issueSession();
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(ADMIN_COOKIE, value, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge,
+  });
+  return res;
+}
+
+export async function DELETE() {
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(ADMIN_COOKIE, "", { path: "/", maxAge: 0 });
+  return res;
 }

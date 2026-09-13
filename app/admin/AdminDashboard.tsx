@@ -4,14 +4,17 @@ import Link from "next/link";
 import { useState } from "react";
 import OrdersPanel from "./OrdersPanel";
 import ProductsPanel from "./ProductsPanel";
+import ClubsPanel from "./ClubsPanel";
 
-type Tab = "orders" | "products";
+type Tab = "orders" | "products" | "clubs";
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("orders");
 
-  function logout() {
-    sessionStorage.removeItem("mde_admin_ok");
+  // Clears the httpOnly session cookie server-side, then reloads into the
+  // password form.
+  async function logout() {
+    await fetch("/api/admin/login", { method: "DELETE" });
     window.location.reload();
   }
 
@@ -44,6 +47,7 @@ export default function AdminDashboard() {
             [
               { id: "orders", label: "Pedidos", icon: "receipt_long" },
               { id: "products", label: "Produtos", icon: "inventory_2" },
+              { id: "clubs", label: "Clubes", icon: "groups" },
             ] as { id: Tab; label: string; icon: string }[]
           ).map((t) => (
             <button
@@ -65,7 +69,9 @@ export default function AdminDashboard() {
       </header>
 
       <main className="flex-1 px-margin-mobile py-6 max-w-3xl mx-auto w-full">
-        {tab === "orders" ? <OrdersPanel /> : <ProductsPanel />}
+        {tab === "orders" && <OrdersPanel />}
+        {tab === "products" && <ProductsPanel />}
+        {tab === "clubs" && <ClubsPanel />}
       </main>
     </div>
   );

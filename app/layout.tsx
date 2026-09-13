@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { CartProvider } from "@/lib/cart";
 import {
   SITE_URL,
   SITE_NAME,
@@ -97,7 +98,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <div className="app-shell">{children}</div>
+        {/* The cart lives above every page so it survives navigation. */}
+        <CartProvider>
+          <div className="app-shell">{children}</div>
+        </CartProvider>
       </body>
     </html>
   );

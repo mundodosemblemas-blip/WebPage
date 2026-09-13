@@ -8,8 +8,9 @@ export const SITE_URL = (
 export const SITE_NAME = "Mundo de Emblemas";
 
 export const SITE_DESCRIPTION =
-  "Pré-encomenda de pins e emblemas dos Aventureiros para clubes de Cabo Verde. " +
-  "Faça e acompanhe o seu pedido online de forma simples.";
+  "A primeira loja online de materiais de Desbravadores e Aventureiros em Cabo Verde. " +
+  "Pins, emblemas, cintos e insígnias: faça a sua encomenda e receba na sua ilha, " +
+  "sem esperar anos por encomendas de fora.";
 
 // Default social-share image: the brand logo (1254×1254, served from /public).
 export const SITE_OG_IMAGE = "/logo.jpeg";

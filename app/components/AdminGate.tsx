@@ -1,12 +1,13 @@
 "use client";
 
+// Wraps the admin UI behind the password form.
+//
+// Authorisation itself lives in an httpOnly cookie that the admin API routes
+// verify — this component only decides whether to show the form or the
+// dashboard, and asks the server on mount whether the session is still valid.
+
 import { useEffect, useState } from "react";
 
-const SESSION_KEY = "mde_admin_ok";
-
-// Wraps the admin UI behind a password prompt. The password is verified by the
-// /api/admin/login server route (kept off the client bundle). On success a
-// sessionStorage flag keeps the admin unlocked for the tab session.
 export default function AdminGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
   const [ready, setReady] = useState(false);
@@ -15,8 +16,15 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    setAuthed(sessionStorage.getItem(SESSION_KEY) === "1");
-    setReady(true);
+    let alive = true;
+    fetch("/api/admin/session")
+      .then((res) => res.json())
+      .then((data) => alive && setAuthed(Boolean(data.ok)))
+      .catch(() => alive && setAuthed(false))
+      .finally(() => alive && setReady(true));
+    return () => {
+      alive = false;
+    };
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -32,8 +40,8 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        sessionStorage.setItem(SESSION_KEY, "1");
         setAuthed(true);
+        setPassword("");
       } else {
         setError(data.error || "Senha incorreta.");
       }

@@ -6,9 +6,11 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/editar"],
+      // Personal or private screens: the admin area, a customer's own order,
+      // and their cart/checkout.
+      disallow: ["/admin", "/pedido", "/carrinho", "/finalizar", "/api"],
     },
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: SITE_URL + "/sitemap.xml",
     host: SITE_URL,
   };
 }

@@ -1,84 +1,28 @@
-import Link from "next/link";
+import HomeStore from "./HomeStore";
+import { listClubs } from "@/lib/db/clubs";
+import { listProducts } from "@/lib/db/products";
+import type { Club, Product } from "@/lib/types";
 
-export default function HomePage() {
-  return (
-    <div className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-surface text-on-surface">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-20%] w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-[-10%] right-[-20%] w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
-      </div>
+// Same cadence as the catalog: admin edits appear within the minute without
+// every visitor hitting the database.
+export const revalidate = 60;
 
-      {/* Main content */}
-      <main className="w-full max-w-md px-margin-mobile flex flex-col items-center justify-center z-10 relative">
-        {/* Hero header */}
-        <header className="text-center mb-10 flex flex-col items-center">
-          <img
-            src="/logo.jpeg"
-            alt="Mundo dos Emblemas — Aventureiros"
-            width={440}
-            height={440}
-            className="w-56 sm:w-64 h-auto mb-3 "
-          />
-          <h2 className="font-headline-md text-headline-md text-on-surface-variant">
-            Aventureiros 🇨🇻
-          </h2>
-        </header>
+export default async function HomePage() {
+  let products: Product[] = [];
+  let clubs: Club[] = [];
+  let failed = false;
 
-        {/* Action buttons */}
-        <div className="w-full flex flex-col gap-4">
-          {/* Primary: new order */}
-          <Link
-            href="/novo"
-            className="w-full relative overflow-hidden group bg-primary text-on-primary rounded-xl p-6 shadow-[0_8px_16px_rgba(0,45,114,0.25)] flex items-center justify-between transition-transform duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-container to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative z-10 flex flex-col items-start text-left">
-              <span className="font-headline-md text-headline-md mb-1">
-                Fazer Novo Pedido
-              </span>
-              <span className="font-body-md text-body-md text-primary-fixed opacity-90">
-                Iniciar uma nova jornada de pins.
-              </span>
-            </div>
-            <div className="relative z-10 w-12 h-12 rounded-full bg-on-primary/20 flex items-center justify-center backdrop-blur-sm">
-              <span className="material-symbols-outlined text-3xl">
-                add_shopping_cart
-              </span>
-            </div>
-          </Link>
+  try {
+    [products, clubs] = await Promise.all([
+      listProducts({ activeOnly: true }),
+      listClubs({ activeOnly: true }),
+    ]);
+  } catch (err) {
+    // Never let a database problem fail the build or masquerade as an empty
+    // shop — say so plainly and recover on the next revalidation.
+    console.error("[home] could not load the catalog", err);
+    failed = true;
+  }
 
-          {/* Secondary: edit order */}
-          <Link
-            href="/editar"
-            className="w-full relative overflow-hidden group bg-surface-container-lowest text-primary border border-outline-variant rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex items-center justify-between transition-transform duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface hover:bg-surface-bright"
-          >
-            <div className="relative z-10 flex flex-col items-start text-left">
-              <span className="font-headline-md text-headline-md mb-1">
-                Editar Pedido Existente
-              </span>
-              <span className="font-body-md text-body-md text-on-surface-variant">
-                Ajustar quantidades ou itens.
-              </span>
-            </div>
-            <div className="relative z-10 w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-              <span className="material-symbols-outlined text-2xl">
-                edit_note
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-12 text-center">
-          <p className="font-label-sm text-label-sm text-outline mt-5">
-            © 2026 Mundo de Emblemas. Todos os direitos reservados.
-          </p>
-          <p className="font-label-sm text-label-sm text-outline">
-            Contato: mundodosemblemas@gmail.com
-          </p>
-        </div>
-      </main>
-    </div>
-  );
+  return <HomeStore products={products} clubs={clubs} failed={failed} />;
 }
